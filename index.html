@@ -1,0 +1,1001 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pesquisa de Opinião sobre Software</title>
+<style>
+  :root{
+    --bg:#f4f5f7;
+    --card:#ffffff;
+    --primary:#3C3489;
+    --primary-dark:#26215C;
+    --primary-light:#EEEDFE;
+    --text:#2C2C2A;
+    --text-secondary:#5F5E5A;
+    --border:#E0DFE8;
+    --success:#0F6E56;
+    --success-bg:#E1F5EE;
+    --radius-md:8px;
+    --radius-lg:12px;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    line-height:1.6;
+  }
+  .container{
+    max-width:760px;
+    margin:0 auto;
+    padding:24px 16px 80px;
+  }
+  header.app-header{
+    text-align:center;
+    margin-bottom:24px;
+  }
+  header.app-header h1{
+    font-size:22px;
+    font-weight:600;
+    margin:0 0 6px;
+    color:var(--primary-dark);
+  }
+  header.app-header p{
+    color:var(--text-secondary);
+    font-size:14px;
+    margin:0;
+  }
+  .progress-wrap{
+    background:var(--card);
+    border-radius:var(--radius-lg);
+    padding:14px 18px;
+    margin-bottom:20px;
+    border:1px solid var(--border);
+  }
+  .progress-bar-bg{
+    background:#EDEBF7;
+    border-radius:6px;
+    height:8px;
+    overflow:hidden;
+    margin-top:8px;
+  }
+  .progress-bar-fill{
+    background:var(--primary);
+    height:100%;
+    width:0%;
+    transition:width .3s ease;
+    border-radius:6px;
+  }
+  .progress-label{
+    display:flex;
+    justify-content:space-between;
+    font-size:13px;
+    color:var(--text-secondary);
+  }
+  .card{
+    background:var(--card);
+    border-radius:var(--radius-lg);
+    border:1px solid var(--border);
+    padding:24px;
+    margin-bottom:20px;
+    display:none;
+  }
+  .card.active{display:block;}
+  .card h2{
+    font-size:18px;
+    font-weight:600;
+    color:var(--primary-dark);
+    margin:0 0 4px;
+  }
+  .card .section-sub{
+    font-size:14px;
+    color:var(--text-secondary);
+    margin:0 0 20px;
+  }
+  .intro-card p{
+    margin:0 0 14px;
+    font-size:15px;
+  }
+  .intro-card ul{
+    margin:0 0 14px;
+    padding-left:20px;
+    font-size:14px;
+    color:var(--text-secondary);
+  }
+  .intro-card .notice{
+    background:var(--primary-light);
+    border-radius:var(--radius-md);
+    padding:12px 14px;
+    font-size:13px;
+    color:var(--primary-dark);
+    margin-top:16px;
+  }
+  .question-block{
+    margin-bottom:22px;
+    padding-bottom:18px;
+    border-bottom:1px solid var(--border);
+  }
+  .question-block:last-child{
+    border-bottom:none;
+    margin-bottom:0;
+    padding-bottom:0;
+  }
+  .question-text{
+    font-size:15px;
+    font-weight:500;
+    margin-bottom:10px;
+  }
+  .options-row{
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+  }
+  .option-label{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:9px 12px;
+    border:1px solid var(--border);
+    border-radius:var(--radius-md);
+    cursor:pointer;
+    font-size:14px;
+    transition:border-color .15s, background .15s;
+  }
+  .option-label:hover{
+    border-color:var(--primary);
+    background:var(--primary-light);
+  }
+  .option-label input{
+    accent-color:var(--primary);
+    width:16px;
+    height:16px;
+    flex-shrink:0;
+  }
+  .option-label.checked{
+    border-color:var(--primary);
+    background:var(--primary-light);
+  }
+  textarea.free-text{
+    width:100%;
+    min-height:80px;
+    border:1px solid var(--border);
+    border-radius:var(--radius-md);
+    padding:10px 12px;
+    font-size:14px;
+    font-family:inherit;
+    resize:vertical;
+  }
+  textarea.free-text:focus, .option-label input:focus-visible{
+    outline:2px solid var(--primary);
+    outline-offset:1px;
+  }
+
+  /* Likert table */
+  .likert-wrap{
+    overflow-x:auto;
+    margin:0 -4px;
+  }
+  table.likert{
+    width:100%;
+    border-collapse:collapse;
+    font-size:13px;
+    min-width:620px;
+  }
+  table.likert th{
+    background:var(--primary-light);
+    color:var(--primary-dark);
+    padding:8px 6px;
+    font-weight:600;
+    text-align:center;
+    border-bottom:2px solid var(--primary);
+  }
+  table.likert th.item-col{
+    text-align:left;
+    min-width:220px;
+  }
+  table.likert td{
+    padding:10px 6px;
+    text-align:center;
+    border-bottom:1px solid var(--border);
+  }
+  table.likert td.item-label{
+    text-align:left;
+    font-size:13px;
+    padding-right:10px;
+  }
+  table.likert tr:nth-child(even){
+    background:#FAFAFC;
+  }
+  table.likert input[type="radio"]{
+    accent-color:var(--primary);
+    width:16px;
+    height:16px;
+    cursor:pointer;
+  }
+  .indicator-tag{
+    display:inline-block;
+    font-size:10px;
+    font-weight:600;
+    color:var(--success);
+    background:var(--success-bg);
+    border-radius:4px;
+    padding:1px 6px;
+    margin-top:3px;
+  }
+
+  .nav-buttons{
+    display:flex;
+    justify-content:space-between;
+    gap:12px;
+    margin-top:8px;
+  }
+  button.btn{
+    font-family:inherit;
+    font-size:14px;
+    font-weight:600;
+    padding:11px 22px;
+    border-radius:var(--radius-md);
+    border:1px solid var(--border);
+    background:var(--card);
+    color:var(--text);
+    cursor:pointer;
+    transition:background .15s, transform .1s;
+  }
+  button.btn:hover{background:#F3F2F8;}
+  button.btn:active{transform:scale(0.98);}
+  button.btn.primary{
+    background:var(--primary);
+    border-color:var(--primary);
+    color:#fff;
+  }
+  button.btn.primary:hover{background:var(--primary-dark);}
+  button.btn:disabled{
+    opacity:.5;
+    cursor:not-allowed;
+  }
+  button.btn.full{width:100%;}
+
+  .error-msg{
+    color:#A32D2D;
+    font-size:13px;
+    margin-top:8px;
+    display:none;
+  }
+
+  /* Tela de sucesso */
+  .success-card{
+    text-align:center;
+    padding:40px 24px;
+  }
+  .success-icon{
+    width:56px;
+    height:56px;
+    border-radius:50%;
+    background:var(--success-bg);
+    color:var(--success);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    margin:0 auto 16px;
+    font-size:28px;
+  }
+  .success-card h2{
+    color:var(--success);
+    margin-bottom:8px;
+  }
+  .success-card p{
+    color:var(--text-secondary);
+    font-size:14px;
+  }
+  .counter-pill{
+    display:inline-block;
+    background:var(--primary-light);
+    color:var(--primary-dark);
+    font-size:13px;
+    font-weight:600;
+    padding:6px 14px;
+    border-radius:20px;
+    margin-top:14px;
+  }
+
+  /* Painel de resultados (admin) */
+  .admin-toggle{
+    text-align:center;
+    margin-top:30px;
+  }
+  .admin-toggle a{
+    font-size:12px;
+    color:var(--text-secondary);
+    text-decoration:underline;
+    cursor:pointer;
+  }
+  .stat-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(140px,1fr));
+    gap:12px;
+    margin-bottom:20px;
+  }
+  .stat-card{
+    background:#F7F6FB;
+    border-radius:var(--radius-md);
+    padding:14px;
+  }
+  .stat-card .label{
+    font-size:12px;
+    color:var(--text-secondary);
+    margin-bottom:4px;
+  }
+  .stat-card .value{
+    font-size:22px;
+    font-weight:600;
+    color:var(--primary-dark);
+  }
+  .bar-row{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-bottom:10px;
+    font-size:13px;
+  }
+  .bar-row .bar-label{
+    width:230px;
+    flex-shrink:0;
+    color:var(--text-secondary);
+  }
+  .bar-track{
+    flex:1;
+    background:#EDEBF7;
+    border-radius:4px;
+    height:10px;
+    overflow:hidden;
+  }
+  .bar-fill{
+    background:var(--primary);
+    height:100%;
+  }
+  .bar-avg{
+    width:40px;
+    text-align:right;
+    font-weight:600;
+    flex-shrink:0;
+  }
+  .loading-msg{
+    text-align:center;
+    color:var(--text-secondary);
+    padding:30px;
+    font-size:14px;
+  }
+  .open-answer{
+    background:#FAFAFC;
+    border:1px solid var(--border);
+    border-radius:var(--radius-md);
+    padding:10px 12px;
+    margin-bottom:8px;
+    font-size:13px;
+  }
+  .open-answer .q{
+    color:var(--text-secondary);
+    font-size:11px;
+    margin-bottom:3px;
+  }
+
+  /* Aviso localStorage */
+  .ls-notice {
+    background:#FFF8E7;
+    border:1px solid #F0C84A;
+    border-radius:var(--radius-md);
+    padding:10px 14px;
+    font-size:13px;
+    color:#6B4A00;
+    margin-bottom:20px;
+    text-align:center;
+  }
+</style>
+</head>
+<body>
+<div class="container" id="app">
+
+  <header class="app-header">
+    <h1>Pesquisa de opinião sobre software</h1>
+    <p>Sistema TaskFlow Pro &mdash; Gestão de Tarefas e Projetos</p>
+  </header>
+
+  <!-- Aviso: respostas ficam apenas no navegador local -->
+  <div class="ls-notice">
+    ⚠️ As respostas são salvas <strong>apenas neste navegador</strong>. Para agregar dados de múltiplos usuários, exporte o CSV e consolide manualmente.
+  </div>
+
+  <div class="progress-wrap" id="progressWrap">
+    <div class="progress-label">
+      <span id="progressText">Introdução</span>
+      <span id="progressPercent">0%</span>
+    </div>
+    <div class="progress-bar-bg">
+      <div class="progress-bar-fill" id="progressFill"></div>
+    </div>
+  </div>
+
+  <!-- TELA 0: Introdução -->
+  <div class="card active intro-card" id="card-intro">
+    <h2>Bem-vindo(a)!</h2>
+    <p>Esta pesquisa tem como objetivo avaliar sua opinião sobre o software <strong>TaskFlow Pro</strong>, utilizado por você no seu dia a dia de trabalho.</p>
+    <p>Suas respostas ajudarão a equipe de desenvolvimento a identificar pontos fortes e oportunidades de melhoria em relação à usabilidade, funcionalidade, desempenho, confiabilidade, qualidade da informação, impacto no trabalho e satisfação geral.</p>
+    <ul>
+      <li>A pesquisa é totalmente <strong>anônima</strong> — nenhum dado de identificação pessoal será solicitado.</li>
+      <li>O tempo médio de resposta é de 5 a 7 minutos.</li>
+      <li>A pesquisa está dividida em 3 seções: Perfil do usuário, Avaliação do software e Avaliação geral.</li>
+      <li>Responda com sinceridade; não há respostas certas ou erradas.</li>
+    </ul>
+    <div class="notice">Ao clicar em "Iniciar pesquisa", você confirma que deseja participar voluntariamente desta avaliação anônima.</div>
+    <div class="nav-buttons" style="margin-top:20px;">
+      <button class="btn primary full" id="btnStart">Iniciar pesquisa</button>
+    </div>
+  </div>
+
+  <!-- TELA 1: Seção 1 - Perfil do usuário -->
+  <div class="card" id="card-1">
+    <h2>Seção 1 — Perfil do usuário</h2>
+    <p class="section-sub">Selecione a opção que melhor representa você.</p>
+
+    <div class="question-block">
+      <p class="question-text">1. Qual a sua faixa de idade?</p>
+      <div class="options-row" data-question="s1q1">
+        <label class="option-label"><input type="radio" name="s1q1" value="Até 20 anos"><span>Até 20 anos</span></label>
+        <label class="option-label"><input type="radio" name="s1q1" value="21 a 30 anos"><span>21 a 30 anos</span></label>
+        <label class="option-label"><input type="radio" name="s1q1" value="31 a 40 anos"><span>31 a 40 anos</span></label>
+        <label class="option-label"><input type="radio" name="s1q1" value="41 a 50 anos"><span>41 a 50 anos</span></label>
+        <label class="option-label"><input type="radio" name="s1q1" value="Acima de 50 anos"><span>Acima de 50 anos</span></label>
+      </div>
+    </div>
+
+    <div class="question-block">
+      <p class="question-text">2. Há quanto tempo você utiliza o software?</p>
+      <div class="options-row" data-question="s1q2">
+        <label class="option-label"><input type="radio" name="s1q2" value="Menos de 1 mês"><span>Menos de 1 mês</span></label>
+        <label class="option-label"><input type="radio" name="s1q2" value="1 a 6 meses"><span>1 a 6 meses</span></label>
+        <label class="option-label"><input type="radio" name="s1q2" value="6 meses a 1 ano"><span>6 meses a 1 ano</span></label>
+        <label class="option-label"><input type="radio" name="s1q2" value="1 a 3 anos"><span>1 a 3 anos</span></label>
+        <label class="option-label"><input type="radio" name="s1q2" value="Mais de 3 anos"><span>Mais de 3 anos</span></label>
+      </div>
+    </div>
+
+    <div class="question-block">
+      <p class="question-text">3. Com que frequência você utiliza o software?</p>
+      <div class="options-row" data-question="s1q3">
+        <label class="option-label"><input type="radio" name="s1q3" value="Diariamente"><span>Diariamente</span></label>
+        <label class="option-label"><input type="radio" name="s1q3" value="Algumas vezes por semana"><span>Algumas vezes por semana</span></label>
+        <label class="option-label"><input type="radio" name="s1q3" value="Uma vez por semana"><span>Uma vez por semana</span></label>
+        <label class="option-label"><input type="radio" name="s1q3" value="Algumas vezes por mês"><span>Algumas vezes por mês</span></label>
+        <label class="option-label"><input type="radio" name="s1q3" value="Raramente"><span>Raramente</span></label>
+      </div>
+    </div>
+
+    <p class="error-msg" id="error-1">Por favor, responda todas as perguntas antes de continuar.</p>
+    <div class="nav-buttons">
+      <button class="btn" id="btnBack1">Voltar</button>
+      <button class="btn primary" id="btnNext1">Continuar</button>
+    </div>
+  </div>
+
+  <!-- TELA 2: Seção 2 - Avaliação do software (Likert) -->
+  <div class="card" id="card-2">
+    <h2>Seção 2 — Avaliação do software</h2>
+    <p class="section-sub">Marque o grau de concordância com cada afirmação: 1) Discordo totalmente · 2) Discordo · 3) Nem concordo nem discordo · 4) Concordo · 5) Concordo totalmente</p>
+
+    <div class="likert-wrap">
+      <table class="likert" id="likertTable">
+        <thead>
+          <tr>
+            <th class="item-col">Afirmação</th>
+            <th>1</th>
+            <th>2</th>
+            <th>3</th>
+            <th>4</th>
+            <th>5</th>
+          </tr>
+        </thead>
+        <tbody id="likertBody"></tbody>
+      </table>
+    </div>
+
+    <p class="error-msg" id="error-2">Por favor, responda todas as 10 afirmações antes de continuar.</p>
+    <div class="nav-buttons">
+      <button class="btn" id="btnBack2">Voltar</button>
+      <button class="btn primary" id="btnNext2">Continuar</button>
+    </div>
+  </div>
+
+  <!-- TELA 3: Seção 3 - Avaliação geral -->
+  <div class="card" id="card-3">
+    <h2>Seção 3 — Avaliação geral</h2>
+    <p class="section-sub">Últimas perguntas sobre sua experiência geral com o software.</p>
+
+    <div class="question-block">
+      <p class="question-text">1. Como você avalia o software de forma geral?</p>
+      <div class="options-row" data-question="s3q1">
+        <label class="option-label"><input type="radio" name="s3q1" value="Muito ruim"><span>Muito ruim</span></label>
+        <label class="option-label"><input type="radio" name="s3q1" value="Ruim"><span>Ruim</span></label>
+        <label class="option-label"><input type="radio" name="s3q1" value="Regular"><span>Regular</span></label>
+        <label class="option-label"><input type="radio" name="s3q1" value="Boa"><span>Boa</span></label>
+        <label class="option-label"><input type="radio" name="s3q1" value="Muito boa"><span>Muito boa</span></label>
+        <label class="option-label"><input type="radio" name="s3q1" value="Excelente"><span>Excelente</span></label>
+      </div>
+    </div>
+
+    <div class="question-block">
+      <p class="question-text">2. Quais funcionalidades do software você considera mais úteis no seu trabalho?</p>
+      <textarea class="free-text" id="s3q2" placeholder="Escreva sua resposta..."></textarea>
+    </div>
+
+    <div class="question-block">
+      <p class="question-text">3. Quais dificuldades ou problemas você já enfrentou ao utilizar o software?</p>
+      <textarea class="free-text" id="s3q3" placeholder="Escreva sua resposta..."></textarea>
+    </div>
+
+    <div class="question-block">
+      <p class="question-text">4. Que sugestões você daria para melhorar o software?</p>
+      <textarea class="free-text" id="s3q4" placeholder="Escreva sua resposta..."></textarea>
+    </div>
+
+    <div class="question-block">
+      <p class="question-text">5. Você recomendaria este software a um colega de trabalho? Por quê?</p>
+      <textarea class="free-text" id="s3q5" placeholder="Escreva sua resposta..."></textarea>
+    </div>
+
+    <p class="error-msg" id="error-3">Por favor, responda a pergunta de avaliação geral antes de enviar.</p>
+    <div class="nav-buttons">
+      <button class="btn" id="btnBack3">Voltar</button>
+      <button class="btn primary" id="btnSubmit">Enviar pesquisa</button>
+    </div>
+  </div>
+
+  <!-- TELA 4: Sucesso -->
+  <div class="card success-card" id="card-success">
+    <div class="success-icon">&#10003;</div>
+    <h2>Obrigado pela sua participação!</h2>
+    <p>Sua resposta foi registrada com sucesso e ajudará a melhorar o TaskFlow Pro.</p>
+    <div class="counter-pill" id="totalCounter">Carregando total de respostas...</div>
+    <div class="nav-buttons" style="margin-top:24px; justify-content:center;">
+      <button class="btn" id="btnNewResponse">Responder novamente</button>
+    </div>
+  </div>
+
+  <div class="admin-toggle">
+    <a id="toggleAdmin">Ver painel de resultados (administrador)</a>
+  </div>
+
+  <!-- TELA ADMIN: Resultados -->
+  <div class="card" id="card-admin">
+    <h2>Painel de resultados</h2>
+    <p class="section-sub">Dados agregados de todas as respostas salvas neste navegador.</p>
+    <div id="adminContent">
+      <p class="loading-msg">Carregando dados...</p>
+    </div>
+    <div class="nav-buttons" style="margin-top:20px;">
+      <button class="btn" id="btnCloseAdmin">Fechar painel</button>
+      <button class="btn primary" id="btnExportCsv">Exportar CSV</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  // ---------- Camada de armazenamento: localStorage puro ----------
+  var LS_PREFIX = "pesquisa_taskflow::";
+
+  var storage = {
+    get: function(key) {
+      try {
+        var raw = localStorage.getItem(LS_PREFIX + key);
+        if (raw === null) return null;
+        return { key: key, value: raw };
+      } catch(e) {
+        console.error("localStorage.get error:", e);
+        return null;
+      }
+    },
+    set: function(key, value) {
+      try {
+        localStorage.setItem(LS_PREFIX + key, value);
+        return { key: key, value: value };
+      } catch(e) {
+        console.error("localStorage.set error:", e);
+        return null;
+      }
+    },
+    delete: function(key) {
+      try {
+        localStorage.removeItem(LS_PREFIX + key);
+        return { key: key, deleted: true };
+      } catch(e) {
+        return null;
+      }
+    },
+    list: function(prefix) {
+      try {
+        var keys = [];
+        for (var i = 0; i < localStorage.length; i++) {
+          var k = localStorage.key(i);
+          if (k && k.indexOf(LS_PREFIX) === 0) {
+            var clean = k.slice(LS_PREFIX.length);
+            if (!prefix || clean.indexOf(prefix) === 0) keys.push(clean);
+          }
+        }
+        return { keys: keys };
+      } catch(e) {
+        return { keys: [] };
+      }
+    }
+  };
+
+  // ---------- Dados das afirmações ----------
+  var ITEMS = [
+    {id:"i1", text:"O software é fácil de aprender a usar.", indicator:"Usabilidade"},
+    {id:"i2", text:"A navegação entre as telas e funções é intuitiva.", indicator:"Usabilidade"},
+    {id:"i3", text:"O software realiza todas as funções que eu preciso no meu trabalho.", indicator:"Qualidade Funcional"},
+    {id:"i4", text:"As funcionalidades disponíveis atendem às minhas expectativas.", indicator:"Qualidade Funcional"},
+    {id:"i5", text:"O software responde rapidamente às minhas ações.", indicator:"Desempenho"},
+    {id:"i6", text:"O tempo de carregamento das telas é satisfatório.", indicator:"Desempenho"},
+    {id:"i7", text:"O software funciona sem falhas ou travamentos.", indicator:"Confiabilidade"},
+    {id:"i8", text:"Os dados inseridos no software são mantidos de forma segura e consistente.", indicator:"Confiabilidade"},
+    {id:"i9", text:"As informações apresentadas pelo software são claras e compreensíveis.", indicator:"Qualidade da Informação"},
+    {id:"i10", text:"O uso do software trouxe melhorias para a minha produtividade no trabalho.", indicator:"Impacto no Trabalho"}
+  ];
+
+  var SCALE_LABELS = ["Discordo totalmente","Discordo","Nem concordo nem discordo","Concordo","Concordo totalmente"];
+
+  var state = {
+    s1: {s1q1:null, s1q2:null, s1q3:null},
+    s2: {},
+    s3: {s3q1:null, s3q2:"", s3q3:"", s3q4:"", s3q5:""}
+  };
+
+  // ---------- Navegação entre telas ----------
+  var cards = ["intro","1","2","3","success","admin"];
+
+  function showCard(name) {
+    cards.forEach(function(c) {
+      document.getElementById("card-" + c).classList.toggle("active", c === name);
+    });
+    updateProgress(name);
+    window.scrollTo({top: 0, behavior: "smooth"});
+  }
+
+  function updateProgress(name) {
+    var map = {
+      "intro": [0, "Introdução"],
+      "1":     [10, "Seção 1 de 3"],
+      "2":     [45, "Seção 2 de 3"],
+      "3":     [80, "Seção 3 de 3"],
+      "success": [100, "Concluído"]
+    };
+    var wrap = document.getElementById("progressWrap");
+    if (name === "admin") { wrap.style.display = "none"; return; }
+    wrap.style.display = "block";
+    var info = map[name] || [0, ""];
+    document.getElementById("progressFill").style.width = info[0] + "%";
+    document.getElementById("progressPercent").textContent = info[0] + "%";
+    document.getElementById("progressText").textContent = info[1];
+  }
+
+  // ---------- Monta a tabela Likert ----------
+  var tbody = document.getElementById("likertBody");
+  ITEMS.forEach(function(item, idx) {
+    var tr = document.createElement("tr");
+    var tdLabel = document.createElement("td");
+    tdLabel.className = "item-label";
+    tdLabel.innerHTML = (idx + 1) + ". " + item.text + "<br><span class='indicator-tag'>" + item.indicator + "</span>";
+    tr.appendChild(tdLabel);
+    for (var v = 1; v <= 5; v++) {
+      var td = document.createElement("td");
+      var label = document.createElement("label");
+      label.style.cssText = "display:inline-flex;align-items:center;justify-content:center;";
+      label.title = SCALE_LABELS[v - 1];
+      var input = document.createElement("input");
+      input.type = "radio";
+      input.name = item.id;
+      input.value = v;
+      (function(itemId, val) {
+        input.addEventListener("change", function() { state.s2[itemId] = val; });
+      })(item.id, v);
+      label.appendChild(input);
+      td.appendChild(label);
+      tr.appendChild(td);
+    }
+    tbody.appendChild(tr);
+  });
+
+  // ---------- Radio groups com highlight visual ----------
+  function wireOptionGroup(containerSelector, stateObj, key) {
+    var container = document.querySelector(containerSelector);
+    if (!container) return;
+    var inputs = container.querySelectorAll("input[type=radio]");
+    inputs.forEach(function(inp) {
+      inp.addEventListener("change", function() {
+        stateObj[key] = inp.value;
+        inputs.forEach(function(i) {
+          i.closest(".option-label").classList.toggle("checked", i.checked);
+        });
+      });
+    });
+  }
+  wireOptionGroup('[data-question="s1q1"]', state.s1, "s1q1");
+  wireOptionGroup('[data-question="s1q2"]', state.s1, "s1q2");
+  wireOptionGroup('[data-question="s1q3"]', state.s1, "s1q3");
+  wireOptionGroup('[data-question="s3q1"]', state.s3, "s3q1");
+
+  ["s3q2","s3q3","s3q4","s3q5"].forEach(function(id) {
+    document.getElementById(id).addEventListener("input", function(e) {
+      state.s3[id] = e.target.value;
+    });
+  });
+
+  // ---------- Navegação botões ----------
+  document.getElementById("btnStart").addEventListener("click", function() { showCard("1"); });
+
+  document.getElementById("btnBack1").addEventListener("click", function() { showCard("intro"); });
+  document.getElementById("btnNext1").addEventListener("click", function() {
+    var ok = state.s1.s1q1 && state.s1.s1q2 && state.s1.s1q3;
+    document.getElementById("error-1").style.display = ok ? "none" : "block";
+    if (ok) showCard("2");
+  });
+
+  document.getElementById("btnBack2").addEventListener("click", function() { showCard("1"); });
+  document.getElementById("btnNext2").addEventListener("click", function() {
+    var ok = ITEMS.every(function(item) { return state.s2[item.id] !== undefined; });
+    document.getElementById("error-2").style.display = ok ? "none" : "block";
+    if (ok) showCard("3");
+  });
+
+  document.getElementById("btnBack3").addEventListener("click", function() { showCard("2"); });
+  document.getElementById("btnSubmit").addEventListener("click", function() {
+    var ok = !!state.s3.s3q1;
+    document.getElementById("error-3").style.display = ok ? "none" : "block";
+    if (!ok) return;
+    submitResponse();
+  });
+
+  document.getElementById("btnNewResponse").addEventListener("click", function() {
+    state = {
+      s1: {s1q1:null, s1q2:null, s1q3:null},
+      s2: {},
+      s3: {s3q1:null, s3q2:"", s3q3:"", s3q4:"", s3q5:""}
+    };
+    document.querySelectorAll("input[type=radio]").forEach(function(i) { i.checked = false; });
+    document.querySelectorAll(".option-label").forEach(function(l) { l.classList.remove("checked"); });
+    document.querySelectorAll("textarea").forEach(function(t) { t.value = ""; });
+    document.querySelectorAll(".error-msg").forEach(function(e) { e.style.display = "none"; });
+    showCard("intro");
+  });
+
+  // ---------- Persistência (localStorage síncrono) ----------
+  function genId() {
+    return "r_" + Date.now() + "_" + Math.random().toString(36).slice(2, 8);
+  }
+
+  function submitResponse() {
+    var btn = document.getElementById("btnSubmit");
+    btn.disabled = true;
+    btn.textContent = "Enviando...";
+
+    var id = genId();
+    var record = {
+      id: id,
+      timestamp: new Date().toISOString(),
+      s1: JSON.parse(JSON.stringify(state.s1)),
+      s2: JSON.parse(JSON.stringify(state.s2)),
+      s3: JSON.parse(JSON.stringify(state.s3))
+    };
+
+    try {
+      storage.set("respostas:" + id, JSON.stringify(record));
+
+      // Atualiza o índice
+      var idxResult = storage.get("respostas:_index");
+      var idx = [];
+      if (idxResult && idxResult.value) {
+        try { idx = JSON.parse(idxResult.value); } catch(e) { idx = []; }
+      }
+      idx.push(id);
+      storage.set("respostas:_index", JSON.stringify(idx));
+
+      showCard("success");
+      loadTotalCounter();
+    } catch(err) {
+      console.error("Erro ao salvar resposta:", err);
+      btn.disabled = false;
+      btn.textContent = "Enviar pesquisa";
+      alert("Não foi possível salvar sua resposta. Verifique se o navegador permite localStorage.");
+    }
+  }
+
+  function loadTotalCounter() {
+    var el = document.getElementById("totalCounter");
+    try {
+      var idxResult = storage.get("respostas:_index");
+      var idx = idxResult && idxResult.value ? JSON.parse(idxResult.value) : [];
+      var n = idx.length;
+      el.textContent = n + " resposta" + (n === 1 ? "" : "s") + " coletada" + (n === 1 ? "" : "s") + " neste navegador";
+    } catch(e) {
+      el.textContent = "Resposta registrada";
+    }
+  }
+
+  // ---------- Painel admin ----------
+  function fetchAllResponses() {
+    var idxResult = storage.get("respostas:_index");
+    if (!idxResult || !idxResult.value) return [];
+    var idx = [];
+    try { idx = JSON.parse(idxResult.value); } catch(e) { return []; }
+    var records = [];
+    idx.forEach(function(id) {
+      try {
+        var r = storage.get("respostas:" + id);
+        if (r && r.value) records.push(JSON.parse(r.value));
+      } catch(e) { /* ignora */ }
+    });
+    return records;
+  }
+
+  function mode(arr) {
+    var counts = {};
+    arr.forEach(function(v) { counts[v] = (counts[v] || 0) + 1; });
+    var best = null, bestCount = -1;
+    Object.keys(counts).forEach(function(k) {
+      if (counts[k] > bestCount) { best = k; bestCount = counts[k]; }
+    });
+    return best ? (best + " (" + bestCount + ")") : "—";
+  }
+
+  function renderAdmin() {
+    var container = document.getElementById("adminContent");
+    container.innerHTML = '<p class="loading-msg">Carregando dados...</p>';
+    var records = fetchAllResponses();
+
+    if (records.length === 0) {
+      container.innerHTML = '<p class="loading-msg">Nenhuma resposta coletada ainda.</p>';
+      return;
+    }
+
+    var html = '';
+
+    // Estatísticas rápidas
+    html += '<div class="stat-grid">';
+    html += '<div class="stat-card"><div class="label">Total de respostas</div><div class="value">' + records.length + '</div></div>';
+
+    var allS2Vals = [];
+    records.forEach(function(r) {
+      Object.keys(r.s2 || {}).forEach(function(k) { allS2Vals.push(Number(r.s2[k])); });
+    });
+    var avgS2 = allS2Vals.length
+      ? (allS2Vals.reduce(function(a, b) { return a + b; }, 0) / allS2Vals.length).toFixed(2)
+      : "—";
+    html += '<div class="stat-card"><div class="label">Média geral (Seção 2)</div><div class="value">' + avgS2 + ' / 5</div></div>';
+
+    var geraisVals = records.map(function(r) { return r.s3 && r.s3.s3q1; }).filter(Boolean);
+    html += '<div class="stat-card"><div class="label">Avaliação mais comum</div><div class="value" style="font-size:15px;">' + mode(geraisVals) + '</div></div>';
+    html += '</div>';
+
+    // Perfil seção 1
+    html += '<h3 style="font-size:15px; margin-bottom:10px;">Perfil dos respondentes</h3>';
+    var s1Config = {
+      s1q1: { title: "Faixa de idade", labels: ["Até 20 anos","21 a 30 anos","31 a 40 anos","41 a 50 anos","Acima de 50 anos"] },
+      s1q2: { title: "Tempo de uso",   labels: ["Menos de 1 mês","1 a 6 meses","6 meses a 1 ano","1 a 3 anos","Mais de 3 anos"] },
+      s1q3: { title: "Frequência de uso", labels: ["Diariamente","Algumas vezes por semana","Uma vez por semana","Algumas vezes por mês","Raramente"] }
+    };
+    Object.keys(s1Config).forEach(function(q) {
+      var cfg = s1Config[q];
+      html += '<p style="font-size:13px; font-weight:600; margin:14px 0 6px;">' + cfg.title + '</p>';
+      var counts = {};
+      records.forEach(function(r) {
+        var v = r.s1 && r.s1[q];
+        if (v) counts[v] = (counts[v] || 0) + 1;
+      });
+      cfg.labels.forEach(function(lab) {
+        var c = counts[lab] || 0;
+        var pct = records.length ? Math.round((c / records.length) * 100) : 0;
+        html += '<div class="bar-row"><span class="bar-label">' + lab + '</span><div class="bar-track"><div class="bar-fill" style="width:' + pct + '%"></div></div><span class="bar-avg">' + c + '</span></div>';
+      });
+    });
+
+    // Médias seção 2
+    html += '<h3 style="font-size:15px; margin:20px 0 10px;">Médias por afirmação (Seção 2)</h3>';
+    ITEMS.forEach(function(item) {
+      var vals = records.map(function(r) {
+        return r.s2 && r.s2[item.id] ? Number(r.s2[item.id]) : null;
+      }).filter(function(v) { return v !== null; });
+      var avg = vals.length ? (vals.reduce(function(a, b) { return a + b; }, 0) / vals.length) : 0;
+      var pct = (avg / 5) * 100;
+      html += '<div class="bar-row"><span class="bar-label" title="' + item.text + '">' + item.text.slice(0, 40) + (item.text.length > 40 ? '…' : '') + '</span><div class="bar-track"><div class="bar-fill" style="width:' + pct + '%"></div></div><span class="bar-avg">' + avg.toFixed(1) + '</span></div>';
+    });
+
+    // Distribuição avaliação geral
+    html += '<h3 style="font-size:15px; margin:20px 0 10px;">Avaliação geral (Seção 3)</h3>';
+    var s3Labels = ["Muito ruim","Ruim","Regular","Boa","Muito boa","Excelente"];
+    var s3Counts = {};
+    records.forEach(function(r) {
+      var v = r.s3 && r.s3.s3q1;
+      if (v) s3Counts[v] = (s3Counts[v] || 0) + 1;
+    });
+    s3Labels.forEach(function(lab) {
+      var c = s3Counts[lab] || 0;
+      var pct = records.length ? Math.round((c / records.length) * 100) : 0;
+      html += '<div class="bar-row"><span class="bar-label">' + lab + '</span><div class="bar-track"><div class="bar-fill" style="width:' + pct + '%"></div></div><span class="bar-avg">' + c + '</span></div>';
+    });
+
+    // Respostas abertas
+    html += '<h3 style="font-size:15px; margin:20px 0 10px;">Respostas abertas recentes</h3>';
+    var openQs = {
+      s3q2: "Funcionalidades mais úteis",
+      s3q3: "Dificuldades enfrentadas",
+      s3q4: "Sugestões de melhoria",
+      s3q5: "Recomendaria?"
+    };
+    var recent = records.slice(-5).reverse();
+    recent.forEach(function(r) {
+      Object.keys(openQs).forEach(function(q) {
+        var v = r.s3 && r.s3[q];
+        if (v && v.trim()) {
+          html += '<div class="open-answer"><div class="q">' + openQs[q] + '</div>' + v.replace(/</g, "&lt;") + '</div>';
+        }
+      });
+    });
+
+    container.innerHTML = html;
+  }
+
+  document.getElementById("toggleAdmin").addEventListener("click", function() {
+    showCard("admin");
+    renderAdmin();
+  });
+  document.getElementById("btnCloseAdmin").addEventListener("click", function() {
+    showCard("intro");
+  });
+
+  // ---------- Exportar CSV ----------
+  document.getElementById("btnExportCsv").addEventListener("click", function() {
+    var records = fetchAllResponses();
+    if (records.length === 0) { alert("Nenhuma resposta para exportar."); return; }
+
+    var headers = ["id","timestamp","s1q1","s1q2","s1q3"];
+    ITEMS.forEach(function(it) { headers.push(it.id); });
+    headers.push("s3q1","s3q2","s3q3","s3q4","s3q5");
+
+    function escapeCsv(v) {
+      if (v === undefined || v === null) return "";
+      var s = String(v);
+      if (s.indexOf(",") > -1 || s.indexOf('"') > -1 || s.indexOf("\n") > -1) {
+        s = '"' + s.replace(/"/g, '""') + '"';
+      }
+      return s;
+    }
+
+    var rows = [headers.join(",")];
+    records.forEach(function(r) {
+      var row = [r.id, r.timestamp, r.s1.s1q1, r.s1.s1q2, r.s1.s1q3];
+      ITEMS.forEach(function(it) { row.push(r.s2[it.id]); });
+      row.push(r.s3.s3q1, r.s3.s3q2, r.s3.s3q3, r.s3.s3q4, r.s3.s3q5);
+      rows.push(row.map(escapeCsv).join(","));
+    });
+
+    var csvContent = rows.join("\n");
+    var blob = new Blob(["\uFEFF" + csvContent], {type: "text/csv;charset=utf-8;"});
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url;
+    a.download = "pesquisa_taskflow_respostas.csv";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  });
+
+})();
+</script>
+</body>
+</html>
